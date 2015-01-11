@@ -60,16 +60,12 @@ class StepRocker(object):
         for mn in range(3):
             self.TMCL.sap(mn, 4, int(maxspeed))
             self.TMCL.sap(mn, 5, int(maxaccel))
-            self.TMCL.sap(mn, 6, int(maxcurrent))
-            self.TMCL.sap(mn, 7, int(standbycurrent))
         if not bool(store):
             return
         self.TMCL.stap(0, 140)
         for mn in range(3):
             self.TMCL.stap(mn, 4)
             self.TMCL.stap(mn, 5)
-            self.TMCL.stap(mn, 6)
-            self.TMCL.stap(mn, 7)
 
     def rotate(self, frequency, motor=0, direction='cw'):
         microstep_resolution = self.TMCL.gap(0, 140)
@@ -82,7 +78,12 @@ class StepRocker(object):
         else:
             raise ValueError('direction needs to be either "cw" or "ccw"')
         return vel / float( self.N0 * microstep_resolution )
+        
+    def offset(self, amount):
+        self.TMCL.mvp(0, "REL", amount)
 
+    def io(self, port, state):
+	self.TMCL.sio(port, state)
 
     def stop(self, motor=0):
         mn = int(motor)
@@ -93,12 +94,10 @@ if __name__ == "__main__":
     
     import time
 
-    rocker = StepRocker(24, port='/dev/ttyACM0')
-    rocker.set_important_parameters(maxspeed=1000,
-                                    maxaccel=10,
-                                    maxcurrent=50,
-                                    standbycurrent=10,
-                                    microstep_resolution=4)
+    rocker = StepRocker(24, port='/dev/ttyRPC0')
+    rocker.set_important_parameters(maxspeed=320,
+                                    maxaccel=40,
+                                    microstep_resolution=6)
     rocker.rotate(10.)
     time.sleep(10)
     rocker.stop()
